@@ -4,7 +4,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Model {
+public class Model implements ModelReader{
     private final int fieldSize;
     private Navy humanNavy, computerNavy;
     private ArrayList<Point> humanShots, computerShots;
@@ -13,7 +13,6 @@ public class Model {
     private final ArrayList<ModelListener> views;
     private static final String HUMAN_WIN_MESSAGE = "YOU WON!!!";
     private static final String COMPUTER_WIN_MESSAGE = "COMPUTER WON!!!"; 
-    
     public Model(int fieldSize) {
         this.views = new ArrayList<>();
         this.fieldSize = fieldSize;
@@ -28,21 +27,29 @@ public class Model {
         computerShots = new ArrayList<>();
         notifyAllListeners();
     }
-
-    public ArrayList<Point> getHumanShots() {
-        return new ArrayList<>(humanShots);
-    }
-
-    public ArrayList<Point> getComputerShots() {
-        return new ArrayList<>(computerShots);
+    
+    public int getHumanShotsNumber(){
+        return humanShots.size();
     }
     
-    public ArrayList<Ship> getHumanShips() {
-        return humanNavy.getShips();
+    public int getComputerShotsNumber(){
+        return computerShots.size();
     }
     
-    public ArrayList<Ship> getComputerShips(){
-        return computerNavy.getShips();
+    public int getHumanShotX(int number){
+        return humanShots.get(number).x;
+    }
+    
+    public int getHumanShotY(int number){
+        return humanShots.get(number).y;
+    }
+    
+    public int getComputerShotX(int number){
+        return computerShots.get(number).x;
+    }
+    
+    public int getComputerShotY(int number){
+        return computerShots.get(number).y;
     }
     
     public float getHumanNavyHealth(){
@@ -79,13 +86,13 @@ public class Model {
     }
     
     private void shootsComputer() {
-        int randX, randY;
+        int shotX, shotY;
         do {
-            randX = random.nextInt(fieldSize);
-            randY = random.nextInt(fieldSize);
-        } while (isHittingSamePlace(randX, randY));
-        computerShots.add(new Point(randX, randY));
-        if (humanNavy.hit(randX, randY)) {
+            shotX = random.nextInt(fieldSize);
+            shotY = random.nextInt(fieldSize);
+        } while (isHittingSamePlace(shotX, shotY));
+        computerShots.add(new Point(shotX, shotY));
+        if (humanNavy.hit(shotX, shotY)) {
             if (!humanNavy.isActive()) {
                 gameState = GameState.COMPUTER_WON;
             }
@@ -113,6 +120,56 @@ public class Model {
             }
         }
         return result;
+    }
+
+    @Override
+    public int getHumanShipsCount() {
+        return humanNavy.ships.size();
+    }
+
+    @Override
+    public int getCellNumberHumanShip(int indexShip) {
+        return humanNavy.structure[indexShip];
+    }
+
+    @Override
+    public int getHumanShipCell_x(int indexShip, int indexCell) {
+        return humanNavy.ships.get(indexShip).cells.get(indexCell).getX();
+    }
+
+    @Override
+    public int getHumanShipCell_y(int indexShip, int indexCell) {
+        return humanNavy.ships.get(indexShip).cells.get(indexCell).getY();
+    }
+
+    @Override
+    public boolean isHumanShipCellAlive(int indexShip, int indexCell) {
+        return humanNavy.ships.get(indexShip).cells.get(indexCell).isAlive_;
+    }
+
+    @Override
+    public int getComputerShipsCount() {
+        return computerNavy.ships.size();
+    }
+
+    @Override
+    public int getCellNumberComputerShip(int indexShip) {
+        return computerNavy.structure[indexShip];
+    }
+
+    @Override
+    public int getComputerShipCell_x(int indexShip, int indexCell) {
+        return computerNavy.ships.get(indexShip).cells.get(indexCell).getX();
+    }
+
+    @Override
+    public int getComputerShipCell_y(int indexShip, int indexCell) {
+        return computerNavy.ships.get(indexShip).cells.get(indexCell).getY();
+    }
+
+    @Override
+    public boolean isComputerShipCellAlive(int indexShip, int indexCell) {
+        return computerNavy.ships.get(indexShip).cells.get(indexCell).isAlive_;
     }
 
     private enum GameState {
@@ -148,10 +205,6 @@ public class Model {
                 } while(ship.isOutOfField() || isOverlapOrTouch(ship));
                 ships.add(ship);
             }
-        }
-        
-        public ArrayList<Ship> getShips(){
-            return new ArrayList<>(ships);
         }
         
         public boolean isActive(){
@@ -199,10 +252,6 @@ public class Model {
             this.isVertivalOrientation = isVerticalPosition;
         }
 
-        public ArrayList<Cell> getCells() {
-            return new ArrayList<>(cells);
-        }
-        
         public int getSize(){
             return cells.size();
         }
