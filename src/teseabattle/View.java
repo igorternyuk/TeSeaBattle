@@ -13,18 +13,14 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import teseabattle.Model.Cell;
-import teseabattle.Model.Ship;
 
 public class View implements ModelListener{
     private final String TITLE_OF_PROGRAM = "TeSeaBattle";
@@ -130,46 +126,52 @@ public class View implements ModelListener{
         }
         
         //Drawing of the human's shots
-        
-        ArrayList<Point> humanShots = model.getHumanShots();
-        for(Point p : humanShots){
-            g.setColor(Color.YELLOW);
-            g.fillOval(p.x * CELL_SIZE + (CELL_SIZE - SHOT_DIAMETER) / 2 + 1, p.y * CELL_SIZE + (CELL_SIZE - SHOT_DIAMETER) / 2 + 1, SHOT_DIAMETER, SHOT_DIAMETER);
+        final int humanShotsNumber = model.getHumanShotsNumber();
+        if (humanShotsNumber > 0) {
+            for (int i = 0; i < humanShotsNumber; ++i) {
+                g.setColor(Color.YELLOW);
+                g.fillOval(model.getHumanShotX(i) * CELL_SIZE + (CELL_SIZE - SHOT_DIAMETER) / 2 + 1,
+                        model.getHumanShotY(i) * CELL_SIZE + (CELL_SIZE - SHOT_DIAMETER) / 2 + 1,
+                        SHOT_DIAMETER, SHOT_DIAMETER);
+            }
+
         }
-        
+
         //Drawing of the computer's shots
-        
-        ArrayList<Point> computerShots = model.getComputerShots();
-        for(Point p : computerShots){
-            g.setColor(Color.YELLOW);
-            g.fillOval(FIELD_DIMENSION * CELL_SIZE + p.x * CELL_SIZE + (CELL_SIZE - SHOT_DIAMETER) / 2 + 1, p.y * CELL_SIZE + (CELL_SIZE - SHOT_DIAMETER) / 2 + 1, SHOT_DIAMETER, SHOT_DIAMETER);
+        final int computerShotsNumber = model.getComputerShotsNumber();
+        if (computerShotsNumber > 0) {
+            for (int i = 0; i < computerShotsNumber; ++i) {
+                g.setColor(Color.YELLOW);
+                g.fillOval(FIELD_DIMENSION * CELL_SIZE + model.getComputerShotX(i)
+                        * CELL_SIZE + (CELL_SIZE - SHOT_DIAMETER) / 2 + 1,
+                        model.getComputerShotY(i) * CELL_SIZE + (CELL_SIZE - SHOT_DIAMETER) / 2 + 1,
+                        SHOT_DIAMETER, SHOT_DIAMETER);
+            }
         }
         
         //Drawing of the human's ships
         
-        ArrayList<Ship> humanShips = model.getHumanShips();
-        for(Ship ship : humanShips){
-            ArrayList<Cell> cells = ship.getCells();
-            for(Cell cell : cells){
-                if(cell.isAlive()){
-                   g.setColor(Color.WHITE.darker());
-                } else {
-                   g.setColor(Color.RED);
-                }
-                g.fill3DRect(FIELD_DIMENSION * CELL_SIZE + cell.getX() * CELL_SIZE, cell.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, true);
+        for (int i = 0; i < model.getHumanShipsCount(); ++i) {
+            final int numCells = model.getCellNumberHumanShip(i); //Сколько ячеек в текущем корабле
+            for (int j = 0; j < numCells; ++j) {
+                g.setColor(model.isHumanShipCellAlive(i, j) ? Color.WHITE.darker() : Color.RED);
+                final int x = model.getHumanShipCell_x(i, j);
+                final int y = model.getHumanShipCell_y(i, j);
+                g.fill3DRect(FIELD_DIMENSION * CELL_SIZE + x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE, true);
             }
         }
-        
+
         //Drawing of the computer's ships
-        
-        ArrayList<Ship> computerShips = model.getComputerShips();
-        for (Ship ship : computerShips) {
-            ArrayList<Cell> cells = ship.getCells();
-            for (Cell cell : cells) {
-                if (!cell.isAlive()) {
+                
+        for (int i = 0; i < model.getComputerShipsCount(); ++i) {
+            final int numCells = model.getCellNumberComputerShip(i); //Сколько ячеек в текущем корабле
+            for (int j = 0; j < numCells; ++j) {
+                if (!model.isComputerShipCellAlive(i, j)) {
                     g.setColor(Color.RED);
-                    g.fill3DRect(cell.getX() * CELL_SIZE, cell.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE, true);
-                } 
+                    final int x = model.getComputerShipCell_x(i, j);
+                    final int y = model.getComputerShipCell_y(i, j);
+                    g.fill3DRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE, true);
+                }
             }
         }
         
